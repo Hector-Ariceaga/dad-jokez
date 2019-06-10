@@ -3,6 +3,18 @@ import Joke from './components/Joke.tsx';
 import API from './utils/API'
 import styled from 'styled-components';
 
+///styling
+const CenteredContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-content: center;
+`
+
+const NewJokeButton = styled.button`
+  align-self: center;
+`
+///
+
 interface State {
   isLoading: boolean;
   currentJoke: string;
@@ -19,37 +31,44 @@ export default class Home extends React.Component<Props, object> {
 
   getJoke = () => {
     try {
-      let jokeData = await API.get('/', {
+      let response = await API.get('/', {
         params: {
           results: 1,
           inc: 'joke'
-          };
-        } catch (error) {
-          console.log(`Axios request failed: ${error}`);
-        }
-    });
+          }
+      })
+      .then(response => {
+        let joke = response.data.results[0].joke;
 
-    jokeData = jokeData.data.results[0].joke;
-
-    this.setState({
-      ...this.state, ...{isLoading: false, jokeData}
-    });
+        this.setState({
+          ...this.state, ...{isLoading: false, joke}
+        });
+      });
+      } catch (error) {
+        console.log(`Axios request failed: ${error}`);
+      }
+    }
   }
 
   async componentDidMount() {
     getJoke();
   }
 
-  handleOnClick = () => {getJoke()};
+  handleOnClick = () => {
+    this.setState({
+      ...this.state, ...{isLoading: true}
+    });
+    getJoke();
+  }
 
   render() {
   const { isLoading, currentJoke } = this.state;
 
     return (
-    <div>
+    <CenteredContainer>
       <Joke isLoading={isLoading} currentJoke={currentJoke} />
-      <button onClick={this.handleOnClick}>Get a new joke!<button>
-    </div>
+      <NewJokeButton onClick={this.handleOnClick}>Get a new joke!</NewJokeButton>
+    </CenteredContainer>
     );
   }
 }
